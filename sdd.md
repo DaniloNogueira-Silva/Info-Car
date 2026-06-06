@@ -128,7 +128,7 @@ O padrão **AAA (Arrange, Act, Assert)** é mandatório em todos os testes.
 * Integrado via `@nestjs/swagger`.
 * Anotações detalhadas nos DTOs (`@ApiProperty`) demonstrando exemplos (ex: Placa "ABC-1234").
 * Agrupamento por tags (`@ApiTags('Vehicles', 'Models', 'Telemetry')`).
-* Definição de segurança (`@ApiBearerAuth()`) para testar o JWT direto pela UI.
+* Definição de segurança (``) para testar o JWT direto pela UI.
 
 ## 7. Observabilidade e Telemetria
 

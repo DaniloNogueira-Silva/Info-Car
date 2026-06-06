@@ -1,37 +1,61 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import type { IBrandRepository } from '@app/shared';
 import { Brand, BRAND_REPOSITORY } from '@app/shared';
 
 @Injectable()
 export class BrandsService {
+  private readonly logger = new Logger(BrandsService.name);
+
   constructor(
     @Inject(BRAND_REPOSITORY)
     private readonly brandRepository: IBrandRepository,
   ) {}
 
   async findAll(): Promise<Brand[]> {
+    this.logger.debug('Fetching all brands...');
     return this.brandRepository.findAll();
   }
 
   async findById(id: string): Promise<Brand> {
+    this.logger.debug(`Fetching brand by id: ${id}`);
+    
     const brand = await this.brandRepository.findById(id);
     if (!brand) {
+      this.logger.warn(`Brand with id "${id}" not found`);
       throw new NotFoundException(`Brand with id "${id}" not found`);
     }
+    
     return brand;
   }
 
   async create(data: Partial<Brand>): Promise<Brand> {
-    return this.brandRepository.create(data);
+    this.logger.log('Creating a new brand...');
+    
+    const brand = await this.brandRepository.create(data);
+    this.logger.log(`Brand created successfully with id: ${brand.id}`);
+    
+    return brand;
   }
 
   async update(id: string, data: Partial<Brand>): Promise<Brand> {
+    this.logger.log(`Updating brand with id: ${id}`);
+    
+    // O findById já lida com a verificação de existência e o log de warning (se não encontrar)
     await this.findById(id);
-    return this.brandRepository.update(id, data);
+    
+    const brand = await this.brandRepository.update(id, data);
+    this.logger.log(`Brand updated successfully with id: ${id}`);
+    
+    return brand;
   }
 
   async remove(id: string): Promise<void> {
+    this.logger.log(`Removing brand with id: ${id}`);
+    
+    // O findById já lida com a verificação de existência e o log de warning
     await this.findById(id);
-    return this.brandRepository.delete(id);
+    await this.brandRepository.delete(id);
+    
+    this.logger.log(`Brand removed successfully with id: ${id}`);
   }
 }

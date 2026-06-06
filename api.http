@@ -1,0 +1,97 @@
+# GET /vehicles
+GET http://localhost:3000/api/v1/vehicles
+
+### GET /vehicles/{id}
+GET http://localhost:3000/api/v1/vehicles/{id}
+
+### POST /vehicles
+POST http://localhost:3000/api/v1/vehicles
+Content-Type: application/json
+
+{
+  "license_plate": "AXC-1234",
+  "chassis": "1HGBd41JXMN109186",
+  "renavam": "12345608910",
+  "year": 2011,
+  "model_id": "57E8423E-F36B-1410-82CC-001F61B491F9"
+}
+
+####  PUT /vehicles/{id}
+PUT http://localhost:3000/api/v1/vehicles/{id}
+Content-Type: application/json
+
+{
+  "name": "Updated Car Name",
+  "plate": "ABC-1234",
+  "model_id": "57E8423E-F36B-1410-82CC-001F61B491F9"
+}
+
+#### DELETE /vehicles/{id}
+DELETE http://localhost:3000/api/v1/vehicles/{id}
+
+#### GET /models
+GET http://localhost:3000/api/v1/models
+
+#### GET /models/{id}
+GET http://localhost:3000/api/v1/models/{id}
+
+#### POST /models
+POST http://localhost:3000/api/v1/models
+Content-Type: application/json
+
+{
+  "name": "Civic",
+  "brand_id": "53E8423E-F36B-1410-82CC-001F61B491F9"
+}
+
+###
+PUT http://localhost:3000/api/v1/models/{id}
+Content-Type: application/json
+
+{
+  "name": "Updated Model Name",
+  "brand_id": "uuid-brand-1"
+}
+
+###
+DELETE http://localhost:3000/api/v1/models/{id}
+
+###
+GET http://localhost:3000/api/v1/brands
+
+###
+GET http://localhost:3000/api/v1/brands/D790433E-F36B-1410-857C-004528F2A221
+
+###
+POST http://localhost:3000/api/v1/brands
+Content-Type: application/json
+
+{
+  "name": "Hyundai"
+}
+
+###
+PUT http://localhost:3000/api/v1/brands/{id}
+Content-Type: application/json
+
+{
+  "name": "Updated Brand Name"
+}
+
+###
+DELETE http://localhost:3000/api/v1/brands/{id}
+
+###
+GET http://localhost:3000/api/v1/users
+
+###
+GET http://localhost:3000/api/v1/users/{id}
+
+###
+POST http://localhost:3000/api/v1/users
+Content-Type: application/json
+
+{
+  "name": "User Name",
+  "email": "user@example.com"
+}

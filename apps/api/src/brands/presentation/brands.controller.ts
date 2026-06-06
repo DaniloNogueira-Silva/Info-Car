@@ -20,7 +20,7 @@ import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from '@app/shared';
 import { BrandsService } from '../application/brands.service';
 
 @ApiTags('Brands')
-@ApiBearerAuth()
+
 @Controller('brands')
 export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}

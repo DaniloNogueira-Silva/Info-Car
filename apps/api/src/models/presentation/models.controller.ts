@@ -22,7 +22,7 @@ import { CreateModelDto, UpdateModelDto, ModelResponseDto } from '@app/shared';
 import { ModelsService } from '../application/models.service';
 
 @ApiTags('Models')
-@ApiBearerAuth()
+
 @Controller('models')
 export class ModelsController {
   constructor(private readonly modelsService: ModelsService) {}

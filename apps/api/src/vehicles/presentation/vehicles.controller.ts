@@ -24,7 +24,7 @@ import {
 import { VehiclesService } from '../application/vehicles.service';
 
 @ApiTags('Vehicles')
-@ApiBearerAuth()
+
 @Controller('vehicles')
 export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}

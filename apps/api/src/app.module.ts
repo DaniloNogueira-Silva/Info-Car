@@ -2,37 +2,30 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { redisStore } from 'cache-manager-redis-yet';
-import { RABBITMQ_SERVICE, FLEET_EVENTS_QUEUE } from '@app/shared';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { RabbitMqModule } from 'libs/infrastructure/rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
-    // ── Environment Variables ──────────────────────────────────
+    // Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
 
-    // ── Rate Limiting — 100 req/min por IP ─────────────────────
+    // Rate Limiting — 100 req/min por IP
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,
     }]),
 
-    // ── Auth (JWT) ─────────────────────────────────────────────
-    AuthModule,
 
-    // ── TypeORM — SQL Server ───────────────────────────────────
+    // TypeORM — SQL Server
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -54,7 +47,7 @@ import { VehiclesModule } from './vehicles/vehicles.module';
       }),
     }),
 
-    // ── Redis Cache ────────────────────────────────────────────
+    // Redis Cache
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
@@ -69,43 +62,22 @@ import { VehiclesModule } from './vehicles/vehicles.module';
         ttl: parseInt(config.get<string>('CACHE_TTL', '60'), 10) * 1000,
       }),
     }),
+    RabbitMqModule,
 
-    // ── RabbitMQ Client (Publisher) ────────────────────────────
-    ClientsModule.registerAsync([
-      {
-        name: RABBITMQ_SERVICE,
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672')],
-            queue: FLEET_EVENTS_QUEUE,
-            queueOptions: { durable: true },
-          },
-        }),
-      },
-    ]),
-
-    // ── Feature Modules ────────────────────────────────────────
+    // Feature Modules
     BrandsModule,
     ModelsModule,
     VehiclesModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
-    // ── Global Guards ────────────────────────────────────────────
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    // Global Guards
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
   ],
-  exports: [ClientsModule],
+  exports: [],
 })
 export class AppModule { }
 

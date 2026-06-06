@@ -3,6 +3,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -20,6 +21,7 @@ import {
 
 @Injectable()
 export class VehiclesService {
+  private readonly logger = new Logger(VehiclesService.name);
   private readonly cacheTtl: number;
 
   private readonly CACHE_KEY_ALL = 'vehicles:all';
@@ -42,25 +44,34 @@ export class VehiclesService {
   // ── Queries (com cache) ──────────────────────────────────────
 
   async findAll(): Promise<Vehicle[]> {
+    this.logger.debug('Fetching all vehicles...');
     const cached = await this.cache.get<Vehicle[]>(this.CACHE_KEY_ALL);
     if (cached) {
+      this.logger.debug('Returning vehicles from cache');
       return cached;
     }
 
+    this.logger.debug('Cache miss. Fetching vehicles from database');
     const vehicles = await this.vehicleRepository.findAll();
+    
     await this.cache.set(this.CACHE_KEY_ALL, vehicles, this.cacheTtl * 1000);
     return vehicles;
   }
 
   async findById(id: string): Promise<Vehicle> {
+    this.logger.debug(`Fetching vehicle by id: ${id}`);
     const cacheKey = `${this.CACHE_KEY_PREFIX}${id}`;
+    
     const cached = await this.cache.get<Vehicle>(cacheKey);
     if (cached) {
+      this.logger.debug(`Returning vehicle ${id} from cache`);
       return cached;
     }
 
+    this.logger.debug(`Cache miss. Fetching vehicle ${id} from database`);
     const vehicle = await this.vehicleRepository.findById(id);
     if (!vehicle) {
+      this.logger.warn(`Vehicle with id "${id}" not found`);
       throw new NotFoundException(`Vehicle with id "${id}" not found`);
     }
 
@@ -71,9 +82,12 @@ export class VehiclesService {
   // ── Commands (publicam evento no RabbitMQ) ───────────────────
 
   async create(data: Partial<Vehicle>): Promise<Vehicle> {
+    this.logger.log('Creating a new vehicle...');
+    
     // Validar modelo existe
     const model = await this.modelRepository.findById(data.model_id!);
     if (!model) {
+      this.logger.warn(`Creation failed: Model with id "${data.model_id}" not found`);
       throw new NotFoundException(`Model with id "${data.model_id}" not found`);
     }
 
@@ -83,13 +97,18 @@ export class VehiclesService {
     await this.ensureUniqueRenavam(data.renavam!);
 
     const vehicle = await this.vehicleRepository.create(data);
-    this.publishVehicleMutatedEvent('created', vehicle.id, data);
+    this.logger.log(`Vehicle created successfully with id: ${vehicle.id}`);
+    
+    await this.publishVehicleMutatedEvent('created', vehicle.id, data);
     return vehicle;
   }
 
   async update(id: string, data: Partial<Vehicle>): Promise<Vehicle> {
+    this.logger.log(`Updating vehicle with id: ${id}`);
+    
     const existing = await this.vehicleRepository.findById(id);
     if (!existing) {
+      this.logger.warn(`Update failed: Vehicle with id "${id}" not found`);
       throw new NotFoundException(`Vehicle with id "${id}" not found`);
     }
 
@@ -97,6 +116,7 @@ export class VehiclesService {
     if (data.model_id) {
       const model = await this.modelRepository.findById(data.model_id);
       if (!model) {
+        this.logger.warn(`Update failed: Model with id "${data.model_id}" not found`);
         throw new NotFoundException(`Model with id "${data.model_id}" not found`);
       }
     }
@@ -113,18 +133,25 @@ export class VehiclesService {
     }
 
     const vehicle = await this.vehicleRepository.update(id, data);
-    this.publishVehicleMutatedEvent('updated', id, data);
+    this.logger.log(`Vehicle updated successfully with id: ${id}`);
+    
+    await this.publishVehicleMutatedEvent('updated', id, data);
     return vehicle;
   }
 
   async remove(id: string): Promise<void> {
+    this.logger.log(`Removing vehicle with id: ${id}`);
+    
     const existing = await this.vehicleRepository.findById(id);
     if (!existing) {
+      this.logger.warn(`Removal failed: Vehicle with id "${id}" not found`);
       throw new NotFoundException(`Vehicle with id "${id}" not found`);
     }
 
     await this.vehicleRepository.delete(id);
-    this.publishVehicleMutatedEvent('deleted', id);
+    this.logger.log(`Vehicle removed successfully with id: ${id}`);
+    
+    await this.publishVehicleMutatedEvent('deleted', id);
   }
 
   // ── Validações de domínio (unicidade) ────────────────────────
@@ -132,6 +159,7 @@ export class VehiclesService {
   private async ensureUniqueLicensePlate(licensePlate: string): Promise<void> {
     const existing = await this.vehicleRepository.findByLicensePlate(licensePlate);
     if (existing) {
+      this.logger.warn(`Conflict: License plate "${licensePlate}" already exists`);
       throw new ConflictException(`A placa "${licensePlate}" já está cadastrada.`);
     }
   }
@@ -139,6 +167,7 @@ export class VehiclesService {
   private async ensureUniqueChassis(chassis: string): Promise<void> {
     const existing = await this.vehicleRepository.findByChassis(chassis);
     if (existing) {
+      this.logger.warn(`Conflict: Chassis "${chassis}" already exists`);
       throw new ConflictException(`O chassi "${chassis}" já está cadastrado.`);
     }
   }
@@ -146,17 +175,20 @@ export class VehiclesService {
   private async ensureUniqueRenavam(renavam: string): Promise<void> {
     const existing = await this.vehicleRepository.findByRenavam(renavam);
     if (existing) {
+      this.logger.warn(`Conflict: RENAVAM "${renavam}" already exists`);
       throw new ConflictException(`O RENAVAM "${renavam}" já está cadastrado.`);
     }
   }
 
   // ── RabbitMQ Publisher ──────────────────────────────────────
 
-  private publishVehicleMutatedEvent(
+  private async publishVehicleMutatedEvent(
     action: VehicleMutatedEventDto['action'],
     vehicleId: string,
     payload?: Record<string, unknown>,
-  ): void {
+  ): Promise<void> {
+    this.logger.debug(`Publishing event to RabbitMQ: vehicle ${action} (id: ${vehicleId})`);
+    
     const event: VehicleMutatedEventDto = {
       action,
       vehicleId,
@@ -164,6 +196,6 @@ export class VehiclesService {
       payload,
     };
 
-    this.rmqClient.emit(VEHICLE_MUTATED_EVENT, event);
+    await this.rmqClient.emit(VEHICLE_MUTATED_EVENT, event);
   }
 }

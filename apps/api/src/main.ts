@@ -6,18 +6,20 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
 
-  // ── Helmet — Proteção de Headers HTTP ──────────────────────
+  //  Helmet — Proteção de Headers HTTP
   app.use(helmet());
 
-  // ── Global Exception Filter ────────────────────────────────
+  //  Global Exception Filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // ── Global Prefix ──────────────────────────────────────────
+  //  Global Prefix
   app.setGlobalPrefix('api/v1');
 
-  // ── Validation Pipe (class-validator) ──────────────────────
+  // Validation Pipe 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -26,7 +28,7 @@ async function bootstrap() {
     }),
   );
 
-  // ── Swagger / OpenAPI ──────────────────────────────────────
+  // Swagger / OpenAPI
   const config = new DocumentBuilder()
     .setTitle('Gestão de Frota info-car')
     .setDescription(
@@ -43,7 +45,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  // ── Start ──────────────────────────────────────────────────
+  // Start
   const port = process.env.API_PORT ?? 3000;
   await app.listen(port);
 

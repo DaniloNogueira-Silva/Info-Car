@@ -12,4 +12,4 @@ export * from './constants/rabbitmq.constants';
 
 // Module
 export * from './shared.module';
-export * from './shared.service';
+export * from '../../infrastructure/rabbitmq/rabbitmq.module';
