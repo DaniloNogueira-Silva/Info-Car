@@ -4,11 +4,19 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import type { Cache } from 'cache-manager';
 import type { IVehicleRepository, IModelRepository } from '@app/shared';
-import { Vehicle, VEHICLE_REPOSITORY, MODEL_REPOSITORY } from '@app/shared';
+import {
+  Vehicle,
+  VEHICLE_REPOSITORY,
+  MODEL_REPOSITORY,
+  RABBITMQ_SERVICE,
+  VEHICLE_MUTATED_EVENT,
+  VehicleMutatedEventDto,
+} from '@app/shared';
 
 @Injectable()
 export class VehiclesService {
@@ -24,6 +32,8 @@ export class VehiclesService {
     private readonly modelRepository: IModelRepository,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
+    @Inject(RABBITMQ_SERVICE)
+    private readonly rmqClient: ClientProxy,
     private readonly config: ConfigService,
   ) {
     this.cacheTtl = parseInt(this.config.get<string>('CACHE_TTL', '60'), 10);
@@ -58,7 +68,7 @@ export class VehiclesService {
     return vehicle;
   }
 
-  // ── Commands (invalidam cache) ───────────────────────────────
+  // ── Commands (publicam evento no RabbitMQ) ───────────────────
 
   async create(data: Partial<Vehicle>): Promise<Vehicle> {
     // Validar modelo existe
@@ -73,7 +83,7 @@ export class VehiclesService {
     await this.ensureUniqueRenavam(data.renavam!);
 
     const vehicle = await this.vehicleRepository.create(data);
-    await this.invalidateCache();
+    this.publishVehicleMutatedEvent('created', vehicle.id, data);
     return vehicle;
   }
 
@@ -103,7 +113,7 @@ export class VehiclesService {
     }
 
     const vehicle = await this.vehicleRepository.update(id, data);
-    await this.invalidateCache(id);
+    this.publishVehicleMutatedEvent('updated', id, data);
     return vehicle;
   }
 
@@ -114,7 +124,7 @@ export class VehiclesService {
     }
 
     await this.vehicleRepository.delete(id);
-    await this.invalidateCache(id);
+    this.publishVehicleMutatedEvent('deleted', id);
   }
 
   // ── Validações de domínio (unicidade) ────────────────────────
@@ -140,12 +150,20 @@ export class VehiclesService {
     }
   }
 
-  // ── Cache helpers ────────────────────────────────────────────
+  // ── RabbitMQ Publisher ──────────────────────────────────────
 
-  private async invalidateCache(vehicleId?: string): Promise<void> {
-    await this.cache.del(this.CACHE_KEY_ALL);
-    if (vehicleId) {
-      await this.cache.del(`${this.CACHE_KEY_PREFIX}${vehicleId}`);
-    }
+  private publishVehicleMutatedEvent(
+    action: VehicleMutatedEventDto['action'],
+    vehicleId: string,
+    payload?: Record<string, unknown>,
+  ): void {
+    const event: VehicleMutatedEventDto = {
+      action,
+      vehicleId,
+      timestamp: new Date(),
+      payload,
+    };
+
+    this.rmqClient.emit(VEHICLE_MUTATED_EVENT, event);
   }
 }

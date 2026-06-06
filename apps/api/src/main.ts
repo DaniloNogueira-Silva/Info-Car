@@ -1,10 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // ── Helmet — Proteção de Headers HTTP ──────────────────────
+  app.use(helmet());
+
+  // ── Global Exception Filter ────────────────────────────────
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // ── Global Prefix ──────────────────────────────────────────
   app.setGlobalPrefix('api/v1');

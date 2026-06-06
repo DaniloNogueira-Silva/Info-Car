@@ -7,3 +7,4 @@ export { ModelResponseDto } from './model-response.dto';
 export { CreateVehicleDto } from './create-vehicle.dto';
 export { UpdateVehicleDto } from './update-vehicle.dto';
 export { VehicleResponseDto } from './vehicle-response.dto';
+export { VehicleMutatedEventDto } from './vehicle-mutated-event.dto';

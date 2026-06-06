@@ -1,0 +1,31 @@
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
+import { VehicleMutatedEventDto } from '@app/shared';
+
+@Injectable()
+export class CacheService {
+  private readonly logger = new Logger(CacheService.name);
+
+  private readonly CACHE_KEY_ALL = 'vehicles:all';
+  private readonly CACHE_KEY_PREFIX = 'vehicles:';
+
+  constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
+  ) {}
+
+  async invalidateVehicleCache(event: VehicleMutatedEventDto): Promise<void> {
+    // Sempre invalida a listagem geral
+    await this.cache.del(this.CACHE_KEY_ALL);
+
+    // Invalida a chave específica do veículo
+    if (event.vehicleId) {
+      await this.cache.del(`${this.CACHE_KEY_PREFIX}${event.vehicleId}`);
+    }
+
+    this.logger.log(
+      `Cache invalidated: [${event.action}] vehicle ${event.vehicleId}`,
+    );
+  }
+}

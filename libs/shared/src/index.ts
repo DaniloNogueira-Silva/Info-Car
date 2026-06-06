@@ -7,6 +7,9 @@ export * from './ports/repositories/index';
 // DTOs
 export * from './dtos/index';
 
+// Constants
+export * from './constants/rabbitmq.constants';
+
 // Module
 export * from './shared.module';
 export * from './shared.service';

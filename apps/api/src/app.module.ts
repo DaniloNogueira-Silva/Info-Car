@@ -2,9 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { redisStore } from 'cache-manager-redis-yet';
+import { RABBITMQ_SERVICE, FLEET_EVENTS_QUEUE } from '@app/shared';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
@@ -16,6 +22,15 @@ import { VehiclesModule } from './vehicles/vehicles.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    // ── Rate Limiting — 100 req/min por IP ─────────────────────
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
+
+    // ── Auth (JWT) ─────────────────────────────────────────────
+    AuthModule,
 
     // ── TypeORM — SQL Server ───────────────────────────────────
     TypeOrmModule.forRootAsync({
@@ -55,12 +70,42 @@ import { VehiclesModule } from './vehicles/vehicles.module';
       }),
     }),
 
+    // ── RabbitMQ Client (Publisher) ────────────────────────────
+    ClientsModule.registerAsync([
+      {
+        name: RABBITMQ_SERVICE,
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get<string>('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672')],
+            queue: FLEET_EVENTS_QUEUE,
+            queueOptions: { durable: true },
+          },
+        }),
+      },
+    ]),
+
     // ── Feature Modules ────────────────────────────────────────
     BrandsModule,
     ModelsModule,
     VehiclesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // ── Global Guards ────────────────────────────────────────────
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
+  exports: [ClientsModule],
 })
 export class AppModule { }
+
