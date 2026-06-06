@@ -22,6 +22,7 @@ import {
   VehicleResponseDto,
 } from '@app/shared';
 import { VehiclesService } from '../application/vehicles.service';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Vehicles')
 
@@ -50,8 +51,11 @@ export class VehiclesController {
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 404, description: 'Modelo não encontrado' })
   @ApiResponse({ status: 409, description: 'Placa, chassi ou RENAVAM já cadastrado' })
-  async create(@Body() dto: CreateVehicleDto): Promise<VehicleResponseDto> {
-    return this.vehiclesService.create({ ...dto, created_by: 'system' });
+  async create(
+    @Body() dto: CreateVehicleDto,
+    @CurrentUser() user: any,
+  ): Promise<VehicleResponseDto> {
+    return this.vehiclesService.create({ ...dto, created_by: user.id });
   }
 
   @Put(':id')

@@ -3,6 +3,7 @@ export class User {
   nickname: string;
   name: string;
   email: string;
+  password?: string;
   created_at: Date;
   updated_at: Date;
   created_by: string;

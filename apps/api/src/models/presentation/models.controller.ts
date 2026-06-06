@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateModelDto, UpdateModelDto, ModelResponseDto } from '@app/shared';
 import { ModelsService } from '../application/models.service';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Models')
 
@@ -51,8 +52,11 @@ export class ModelsController {
   @ApiResponse({ status: 201, description: 'Modelo criado', type: ModelResponseDto })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 404, description: 'Marca não encontrada' })
-  async create(@Body() dto: CreateModelDto): Promise<ModelResponseDto> {
-    return this.modelsService.create({ ...dto, created_by: 'system' });
+  async create(
+    @Body() dto: CreateModelDto,
+    @CurrentUser() user: any,
+  ): Promise<ModelResponseDto> {
+    return this.modelsService.create({ ...dto, created_by: user.id });
   }
 
   @Put(':id')

@@ -23,12 +23,33 @@ async function runSeed() {
   try {
     console.log('🚀 Iniciando script de seed...\n');
 
+    // 0. Autenticação
+    console.log('0️⃣ Criando e autenticando usuário...');
+    const userPayload = {
+      nickname: `seeder_${randomString(3)}`,
+      name: 'Seeder User',
+      email: `seeder_${randomString(5)}@example.com`,
+      password: 'password123'
+    };
+    const registerRes = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userPayload)
+    });
+    const authData = await registerRes.json();
+    if (!registerRes.ok) throw new Error(`Erro no Registro: ${JSON.stringify(authData)}`);
+    const token = authData.access_token;
+    console.log(`✅ Usuário criado e autenticado! Token: ${token.substring(0, 10)}...\n`);
+
     // 1. Criar Brand
     console.log('1️⃣ Criando Brand...');
     const brandPayload = { name: `Marca_${randomString(5)}` };
     const brandRes = await fetch(`${API_BASE_URL}/brands`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(brandPayload)
     });
     const brand = await brandRes.json();
@@ -43,7 +64,10 @@ async function runSeed() {
     };
     const modelRes = await fetch(`${API_BASE_URL}/models`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(modelPayload)
     });
     const model = await modelRes.json();
@@ -62,7 +86,10 @@ async function runSeed() {
     
     const vehicleRes = await fetch(`${API_BASE_URL}/vehicles`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(vehiclePayload)
     });
     const vehicle = await vehicleRes.json();
@@ -78,7 +105,9 @@ async function runSeed() {
 
     // 4. Buscar todos os Vehicles
     console.log('4️⃣ Buscando todos os Vehicles...');
-    const allVehiclesRes = await fetch(`${API_BASE_URL}/vehicles`);
+    const allVehiclesRes = await fetch(`${API_BASE_URL}/vehicles`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const allVehicles = await allVehiclesRes.json();
     
     console.log(`✅ Busca concluída! Total de veículos: ${allVehicles.length || (Array.isArray(allVehicles) ? allVehicles.length : 'N/A')}`);

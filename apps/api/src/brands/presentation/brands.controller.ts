@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from '@app/shared';
 import { BrandsService } from '../application/brands.service';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Brands')
 
@@ -44,8 +45,11 @@ export class BrandsController {
   @ApiOperation({ summary: 'Criar nova marca' })
   @ApiResponse({ status: 201, description: 'Marca criada', type: BrandResponseDto })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  async create(@Body() dto: CreateBrandDto): Promise<BrandResponseDto> {
-    return this.brandsService.create({ ...dto, created_by: 'system' });
+  async create(
+    @Body() dto: CreateBrandDto,
+    @CurrentUser() user: any,
+  ): Promise<BrandResponseDto> {
+    return this.brandsService.create({ ...dto, created_by: user.id });
   }
 
   @Put(':id')

@@ -8,6 +8,9 @@ import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { RabbitMqModule } from 'libs/infrastructure/rabbitmq/rabbitmq.module';
 import { RedisModule } from 'libs/infrastructure/redis/redis.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -50,6 +53,10 @@ import { RedisModule } from 'libs/infrastructure/redis/redis.module';
 
     RabbitMqModule,
 
+    // Auth & Users
+    UsersModule,
+    AuthModule,
+
     // Feature Modules
     BrandsModule,
     ModelsModule,
@@ -61,6 +68,10 @@ import { RedisModule } from 'libs/infrastructure/redis/redis.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
   ],
   exports: [],
