@@ -20,7 +20,7 @@ async function bootstrap() {
 
   // ── Swagger / OpenAPI ──────────────────────────────────────
   const config = new DocumentBuilder()
-    .setTitle('Gestão de Frota Aivacol')
+    .setTitle('Gestão de Frota info-car')
     .setDescription(
       'API REST para gestão de frota com Clean Architecture e DDD',
     )

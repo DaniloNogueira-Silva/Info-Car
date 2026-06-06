@@ -26,7 +26,7 @@ export class VehiclesService {
     private readonly cache: Cache,
     private readonly config: ConfigService,
   ) {
-    this.cacheTtl = this.config.get<number>('CACHE_TTL', 60);
+    this.cacheTtl = parseInt(this.config.get<string>('CACHE_TTL', '60'), 10);
   }
 
   // ── Queries (com cache) ──────────────────────────────────────

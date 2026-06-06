@@ -24,10 +24,12 @@ import { VehiclesModule } from './vehicles/vehicles.module';
       useFactory: (config: ConfigService) => ({
         type: 'mssql' as const,
         host: config.get<string>('DB_HOST', 'localhost'),
-        port: config.get<number>('DB_PORT', 1433),
+
+        port: parseInt(config.get<string>('DATABASE_PORT', '1433'), 10) || 1433,
+
         username: config.get<string>('DB_USERNAME', 'sa'),
         password: config.get<string>('DB_PASSWORD', 'YourStrong!Passw0rd'),
-        database: config.get<string>('DB_DATABASE', 'aivacol'),
+        database: config.get<string>('DB_DATABASE', 'info-car'),
         autoLoadEntities: true,
         synchronize: config.get<string>('DB_SYNC', 'false') === 'true',
         options: {
@@ -46,10 +48,10 @@ import { VehiclesModule } from './vehicles/vehicles.module';
         store: await redisStore({
           socket: {
             host: config.get<string>('REDIS_HOST', 'localhost'),
-            port: config.get<number>('REDIS_PORT', 6379),
+            port: parseInt(config.get<string>('REDIS_PORT', '6379'), 10),
           },
         }),
-        ttl: config.get<number>('CACHE_TTL', 60) * 1000,
+        ttl: parseInt(config.get<string>('CACHE_TTL', '60'), 10) * 1000,
       }),
     }),
 
@@ -61,4 +63,4 @@ import { VehiclesModule } from './vehicles/vehicles.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,4 +1,4 @@
-# Documento de Especificação Arquitetural (SDD) - Gestão de Frota Aivacol
+# Documento de Especificação Arquitetural (SDD) - Gestão de Frota info-car
 
 ## 1. Visão Geral e Arquitetura
 
@@ -162,7 +162,7 @@ Docker Compose (`docker-compose.yml`)
 * **Healthchecks:** Garantir que a `api` só inicie após o banco de dados estar "healthy".
 * **Volumes:** Persistência de dados para SQL Server e MongoDB.
 * 
-**Seed:** Script `entrypoint.sh` ou funcionalidade na inicialização do NestJS que injeta os dados do arquivo obrigatório `seed_vehicles.json` e cria o usuário padrão `aivacol` automaticamente.
+**Seed:** Script `entrypoint.sh` ou funcionalidade na inicialização do NestJS que injeta os dados do arquivo obrigatório `seed_vehicles.json` e cria o usuário padrão `info-car` automaticamente.
 
 
 

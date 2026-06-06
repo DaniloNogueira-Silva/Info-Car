@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: aivacol-api
+    container_name: info-car-api
     ports:
       - '3000:3000'
     env_file:
@@ -11,19 +11,21 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
       redis:
         condition: service_started
       rabbitmq:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - aivacol-network
+      - info-car-network
 
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
-    container_name: aivacol-worker
+    container_name: info-car-worker
     env_file:
       - .env
     depends_on:
@@ -35,11 +37,11 @@ services:
         condition: service_started
     restart: unless-stopped
     networks:
-      - aivacol-network
+      - info-car-network
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: aivacol-sqlserver
+    container_name: info-car-sqlserver
     ports:
       - '1433:1433'
     environment:
@@ -54,22 +56,22 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - aivacol-network
+      - info-car-network
 
   redis:
     image: redis:7-alpine
-    container_name: aivacol-redis
+    container_name: info-car-redis
     ports:
       - '6379:6379'
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     networks:
-      - aivacol-network
+      - info-car-network
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: aivacol-rabbitmq
+    container_name: info-car-rabbitmq
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -85,17 +87,28 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - aivacol-network
+      - info-car-network
 
   mongodb:
     image: mongo:7
-    container_name: aivacol-mongodb
+    container_name: info-car-mongodb
     ports:
       - '27017:27017'
     volumes:
       - mongodb_data:/data/db
     networks:
-      - aivacol-network
+      - info-car-network
+  
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: info-car-sqlserver-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    command: >
+      /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "YourStrong!Passw0rd" -C -Q "IF DB_ID('info-car') IS NULL CREATE DATABASE [info-car];"
+    networks:
+      - info-car-network
 
 volumes:
   sqlserver_data:
@@ -104,5 +117,5 @@ volumes:
   mongodb_data:
 
 networks:
-  aivacol-network:
+  info-car-network:
     driver: bridge
