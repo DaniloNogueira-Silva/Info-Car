@@ -1,0 +1,85 @@
+# ==========================================
+# Dependências do Node.js
+# ==========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+lerna-debug.log
+
+# ==========================================
+# Artefatos de Build e Compilação
+# ==========================================
+dist/
+build/
+out/
+.nest/
+*.tsbuildinfo
+
+# ==========================================
+# Variáveis de Ambiente e Segredos
+# ==========================================
+.env
+.env.production
+.env.development
+.env.test
+.env.local
+*.pem
+*.key
+*.cert
+
+# Nota: O arquivo .env.example (se você criar) não 
+# deve ser ignorado para servir de base aos desenvolvedores.
+
+# ==========================================
+# Testes e Cobertura (Jest)
+# ==========================================
+coverage/
+.nyc_output/
+.jest-test-results.json
+
+# ==========================================
+# Logs
+# ==========================================
+logs/
+*.log
+
+# ==========================================
+# Arquivos de Sistema Operacional
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# IDEs e Editores (VSCode, IntelliJ, etc)
+# ==========================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==========================================
+# Docker
+# ==========================================
+.docker-sync/
+
+# ==========================================
+# Banco de Dados / Volumes Locais
+# ==========================================
+.mongodb_data/
+.sqlserver_data/
+.redis_data/
+.rabbitmq_data/

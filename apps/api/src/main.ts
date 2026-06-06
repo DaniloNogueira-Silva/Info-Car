@@ -1,0 +1,45 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // ── Global Prefix ──────────────────────────────────────────
+  app.setGlobalPrefix('api/v1');
+
+  // ── Validation Pipe (class-validator) ──────────────────────
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  // ── Swagger / OpenAPI ──────────────────────────────────────
+  const config = new DocumentBuilder()
+    .setTitle('Gestão de Frota Aivacol')
+    .setDescription(
+      'API REST para gestão de frota com Clean Architecture e DDD',
+    )
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('Vehicles', 'Operações de veículos')
+    .addTag('Models', 'Operações de modelos')
+    .addTag('Brands', 'Operações de marcas')
+    .addTag('Telemetry', 'Simulação e consulta de telemetria IoT')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  // ── Start ──────────────────────────────────────────────────
+  const port = process.env.API_PORT ?? 3000;
+  await app.listen(port);
+
+  console.log(`🚀 API running on http://localhost:${port}`);
+  console.log(`📄 Swagger docs at http://localhost:${port}/docs`);
+}
+bootstrap();
