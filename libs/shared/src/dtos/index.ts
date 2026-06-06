@@ -1,3 +1,9 @@
-export { CreateVehicleDto } from './create-vehicle.dto.js';
-export { UpdateVehicleDto } from './update-vehicle.dto.js';
-export { VehicleResponseDto } from './vehicle-response.dto.js';
+export { CreateBrandDto } from './create-brand.dto';
+export { UpdateBrandDto } from './update-brand.dto';
+export { BrandResponseDto } from './brand-response.dto';
+export { CreateModelDto } from './create-model.dto';
+export { UpdateModelDto } from './update-model.dto';
+export { ModelResponseDto } from './model-response.dto';
+export { CreateVehicleDto } from './create-vehicle.dto';
+export { UpdateVehicleDto } from './update-vehicle.dto';
+export { VehicleResponseDto } from './vehicle-response.dto';

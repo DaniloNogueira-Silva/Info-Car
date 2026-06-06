@@ -1,4 +1,4 @@
-import { Vehicle } from '../../domain/entities/vehicle.entity.js';
+import { Vehicle } from '../../domain/entities/vehicle.entity';
 
 export interface IVehicleRepository {
   findAll(): Promise<Vehicle[]>;

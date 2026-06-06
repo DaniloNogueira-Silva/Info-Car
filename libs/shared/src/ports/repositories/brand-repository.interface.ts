@@ -1,4 +1,4 @@
-import { Brand } from '../../domain/entities/brand.entity.js';
+import { Brand } from '../../domain/entities/brand.entity';
 
 export interface IBrandRepository {
   findAll(): Promise<Brand[]>;

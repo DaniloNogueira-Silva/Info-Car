@@ -1,4 +1,4 @@
-import { Brand } from './brand.entity.js';
+import { Brand } from './brand.entity';
 
 export class Model {
   id: string;

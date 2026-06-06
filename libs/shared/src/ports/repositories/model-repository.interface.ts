@@ -1,4 +1,4 @@
-import { Model } from '../../domain/entities/model.entity.js';
+import { Model } from '../../domain/entities/model.entity';
 
 export interface IModelRepository {
   findAll(): Promise<Model[]>;

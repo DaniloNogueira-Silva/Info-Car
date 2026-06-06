@@ -1,4 +1,4 @@
-import { User } from '../../domain/entities/user.entity.js';
+import { User } from '../../domain/entities/user.entity';
 
 export interface IUserRepository {
   findAll(): Promise<User[]>;

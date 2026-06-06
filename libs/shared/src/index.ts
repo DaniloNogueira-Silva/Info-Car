@@ -1,12 +1,12 @@
 // Domain Entities
-export * from './domain/entities/index.js';
+export * from './domain/entities/index';
 
 // Ports (Repository Interfaces)
-export * from './ports/repositories/index.js';
+export * from './ports/repositories/index';
 
 // DTOs
-export * from './dtos/index.js';
+export * from './dtos/index';
 
 // Module
-export * from './shared.module.js';
-export * from './shared.service.js';
+export * from './shared.module';
+export * from './shared.service';

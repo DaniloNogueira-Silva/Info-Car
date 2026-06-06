@@ -1,4 +1,4 @@
-import { Model } from './model.entity.js';
+import { Model } from './model.entity';
 
 export class Vehicle {
   id: string;
