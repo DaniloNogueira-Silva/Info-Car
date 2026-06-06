@@ -28,6 +28,7 @@
       "@app/shared/*": [
         "libs/shared/src/*"
       ]
-    }
+    },
+    "types": ["jest", "node"]
   }
 }
