@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
 import { AuditLog, AuditLogSchema } from './schemas/audit-log.schema';
 import { AuditService } from './services/audit.service';
 import { CacheService } from './services/cache.service';
 import { VehicleEventConsumer } from './consumers/vehicle-event.consumer';
+import { RedisModule } from 'libs/infrastructure/redis/redis.module';
 
 @Module({
   imports: [
@@ -30,19 +29,7 @@ import { VehicleEventConsumer } from './consumers/vehicle-event.consumer';
     ]),
 
     // ── Redis Cache ────────────────────────────────────────────
-    CacheModule.registerAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        store: await redisStore({
-          socket: {
-            host: config.get<string>('REDIS_HOST', 'localhost'),
-            port: parseInt(config.get<string>('REDIS_PORT', '6379'), 10),
-          },
-        }),
-      }),
-    }),
+    RedisModule,
   ],
   controllers: [VehicleEventConsumer],
   providers: [AuditService, CacheService],

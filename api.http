@@ -9,11 +9,11 @@ POST http://localhost:3000/api/v1/vehicles
 Content-Type: application/json
 
 {
-  "license_plate": "AXC-1234",
-  "chassis": "1HGBd41JXMN109186",
-  "renavam": "12345608910",
+  "license_plate": "ADF-1234",
+  "chassis": "2HGBd41JXMN109186",
+  "renavam": "22345608910",
   "year": 2011,
-  "model_id": "57E8423E-F36B-1410-82CC-001F61B491F9"
+  "model_id": "911A433E-F36B-1410-8679-00149FB6E9D1"
 }
 
 ####  PUT /vehicles/{id}
@@ -41,7 +41,7 @@ Content-Type: application/json
 
 {
   "name": "Civic",
-  "brand_id": "53E8423E-F36B-1410-82CC-001F61B491F9"
+  "brand_id": "8C1A433E-F36B-1410-8679-00149FB6E9D1"
 }
 
 ###

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
 import { VehiclesService } from './vehicles.service';
 import {
   Vehicle,
@@ -12,14 +12,14 @@ import {
   VEHICLE_MUTATED_EVENT,
 } from '@app/shared';
 import type { IVehicleRepository, IModelRepository } from '@app/shared';
-import type { Cache } from 'cache-manager';
+import { RedisService } from 'libs/infrastructure/redis/redis.service';
 import { Model, Brand } from '@app/shared';
 
 describe('VehiclesService', () => {
   let service: VehiclesService;
   let vehicleRepo: jest.Mocked<IVehicleRepository>;
   let modelRepo: jest.Mocked<IModelRepository>;
-  let cache: jest.Mocked<Cache>;
+  let cache: jest.Mocked<RedisService>;
   let rmqClient: jest.Mocked<Pick<ClientProxy, 'emit'>>;
 
   const mockModel = new Model({
@@ -63,7 +63,7 @@ describe('VehiclesService', () => {
       delete: jest.fn(),
     };
 
-    const mockCache: jest.Mocked<Cache> = {
+    const mockCache: jest.Mocked<RedisService> = {
       get: jest.fn(),
       set: jest.fn(),
       del: jest.fn(),
@@ -78,7 +78,7 @@ describe('VehiclesService', () => {
         VehiclesService,
         { provide: VEHICLE_REPOSITORY, useValue: mockVehicleRepo },
         { provide: MODEL_REPOSITORY, useValue: mockModelRepo },
-        { provide: CACHE_MANAGER, useValue: mockCache },
+        { provide: RedisService, useValue: mockCache },
         { provide: RABBITMQ_SERVICE, useValue: mockRmqClient },
         {
           provide: ConfigService,
@@ -90,7 +90,7 @@ describe('VehiclesService', () => {
     service = module.get<VehiclesService>(VehiclesService);
     vehicleRepo = module.get(VEHICLE_REPOSITORY);
     modelRepo = module.get(MODEL_REPOSITORY);
-    cache = module.get(CACHE_MANAGER);
+    cache = module.get(RedisService);
     rmqClient = module.get(RABBITMQ_SERVICE);
   });
 
@@ -125,7 +125,7 @@ describe('VehiclesService', () => {
       expect(vehicleRepo.findAll).toHaveBeenCalledTimes(1);
       expect(cache.set).toHaveBeenCalledWith(
         'vehicles:all',
-        vehicles,
+        JSON.parse(JSON.stringify(vehicles)),
         60000,
       );
     });

@@ -1,15 +1,14 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
-import type { Cache } from 'cache-manager';
+import { RedisService } from 'libs/infrastructure/redis/redis.service';
 import { CacheService } from './cache.service';
 import { VehicleMutatedEventDto } from '@app/shared';
 
 describe('CacheService', () => {
   let service: CacheService;
-  let cache: jest.Mocked<Cache>;
+  let cache: jest.Mocked<RedisService>;
 
   beforeEach(async () => {
-    const mockCache: jest.Mocked<Cache> = {
+    const mockCache: jest.Mocked<RedisService> = {
       get: jest.fn(),
       set: jest.fn(),
       del: jest.fn().mockResolvedValue(undefined),
@@ -18,12 +17,12 @@ describe('CacheService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CacheService,
-        { provide: CACHE_MANAGER, useValue: mockCache },
+        { provide: RedisService, useValue: mockCache },
       ],
     }).compile();
 
     service = module.get<CacheService>(CacheService);
-    cache = module.get(CACHE_MANAGER);
+    cache = module.get(RedisService);
   });
 
   // ── invalidateVehicleCache ───────────────────────────────────

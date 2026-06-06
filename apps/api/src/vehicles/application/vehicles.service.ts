@@ -6,9 +6,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
-import type { Cache } from 'cache-manager';
+import { RedisService } from 'libs/infrastructure/redis/redis.service';
 import type { IVehicleRepository, IModelRepository } from '@app/shared';
 import {
   Vehicle,
@@ -32,8 +31,7 @@ export class VehiclesService {
     private readonly vehicleRepository: IVehicleRepository,
     @Inject(MODEL_REPOSITORY)
     private readonly modelRepository: IModelRepository,
-    @Inject(CACHE_MANAGER)
-    private readonly cache: Cache,
+    private readonly cache: RedisService,
     @Inject(RABBITMQ_SERVICE)
     private readonly rmqClient: ClientProxy,
     private readonly config: ConfigService,
@@ -45,6 +43,7 @@ export class VehiclesService {
 
   async findAll(): Promise<Vehicle[]> {
     this.logger.debug('Fetching all vehicles...');
+
     const cached = await this.cache.get<Vehicle[]>(this.CACHE_KEY_ALL);
     if (cached) {
       this.logger.debug('Returning vehicles from cache');
@@ -53,15 +52,17 @@ export class VehiclesService {
 
     this.logger.debug('Cache miss. Fetching vehicles from database');
     const vehicles = await this.vehicleRepository.findAll();
-    
-    await this.cache.set(this.CACHE_KEY_ALL, vehicles, this.cacheTtl * 1000);
+
+    const plainVehicles = JSON.parse(JSON.stringify(vehicles));
+
+    await this.cache.set(this.CACHE_KEY_ALL, plainVehicles, this.cacheTtl * 1000);
     return vehicles;
   }
 
   async findById(id: string): Promise<Vehicle> {
     this.logger.debug(`Fetching vehicle by id: ${id}`);
     const cacheKey = `${this.CACHE_KEY_PREFIX}${id}`;
-    
+
     const cached = await this.cache.get<Vehicle>(cacheKey);
     if (cached) {
       this.logger.debug(`Returning vehicle ${id} from cache`);
@@ -83,7 +84,7 @@ export class VehiclesService {
 
   async create(data: Partial<Vehicle>): Promise<Vehicle> {
     this.logger.log('Creating a new vehicle...');
-    
+
     // Validar modelo existe
     const model = await this.modelRepository.findById(data.model_id!);
     if (!model) {
@@ -98,14 +99,14 @@ export class VehiclesService {
 
     const vehicle = await this.vehicleRepository.create(data);
     this.logger.log(`Vehicle created successfully with id: ${vehicle.id}`);
-    
+
     await this.publishVehicleMutatedEvent('created', vehicle.id, data);
     return vehicle;
   }
 
   async update(id: string, data: Partial<Vehicle>): Promise<Vehicle> {
     this.logger.log(`Updating vehicle with id: ${id}`);
-    
+
     const existing = await this.vehicleRepository.findById(id);
     if (!existing) {
       this.logger.warn(`Update failed: Vehicle with id "${id}" not found`);
@@ -134,14 +135,14 @@ export class VehiclesService {
 
     const vehicle = await this.vehicleRepository.update(id, data);
     this.logger.log(`Vehicle updated successfully with id: ${id}`);
-    
+
     await this.publishVehicleMutatedEvent('updated', id, data);
     return vehicle;
   }
 
   async remove(id: string): Promise<void> {
     this.logger.log(`Removing vehicle with id: ${id}`);
-    
+
     const existing = await this.vehicleRepository.findById(id);
     if (!existing) {
       this.logger.warn(`Removal failed: Vehicle with id "${id}" not found`);
@@ -150,7 +151,7 @@ export class VehiclesService {
 
     await this.vehicleRepository.delete(id);
     this.logger.log(`Vehicle removed successfully with id: ${id}`);
-    
+
     await this.publishVehicleMutatedEvent('deleted', id);
   }
 
@@ -188,7 +189,7 @@ export class VehiclesService {
     payload?: Record<string, unknown>,
   ): Promise<void> {
     this.logger.debug(`Publishing event to RabbitMQ: vehicle ${action} (id: ${vehicleId})`);
-    
+
     const event: VehicleMutatedEventDto = {
       action,
       vehicleId,

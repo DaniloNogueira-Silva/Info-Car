@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
+import { RedisService } from 'libs/infrastructure/redis/redis.service';
 import { VehicleMutatedEventDto } from '@app/shared';
 
 @Injectable()
@@ -11,8 +10,7 @@ export class CacheService {
   private readonly CACHE_KEY_PREFIX = 'vehicles:';
 
   constructor(
-    @Inject(CACHE_MANAGER)
-    private readonly cache: Cache,
+    private readonly cache: RedisService,
   ) {}
 
   async invalidateVehicleCache(event: VehicleMutatedEventDto): Promise<void> {

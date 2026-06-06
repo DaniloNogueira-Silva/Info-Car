@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { redisStore } from 'cache-manager-redis-yet';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { RabbitMqModule } from 'libs/infrastructure/rabbitmq/rabbitmq.module';
+import { RedisModule } from 'libs/infrastructure/redis/redis.module';
 
 @Module({
   imports: [
@@ -46,22 +45,9 @@ import { RabbitMqModule } from 'libs/infrastructure/rabbitmq/rabbitmq.module';
         },
       }),
     }),
-
     // Redis Cache
-    CacheModule.registerAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        store: await redisStore({
-          socket: {
-            host: config.get<string>('REDIS_HOST', 'localhost'),
-            port: parseInt(config.get<string>('REDIS_PORT', '6379'), 10),
-          },
-        }),
-        ttl: parseInt(config.get<string>('CACHE_TTL', '60'), 10) * 1000,
-      }),
-    }),
+    RedisModule,
+
     RabbitMqModule,
 
     // Feature Modules
