@@ -41,12 +41,12 @@ export class RentalsService {
       relations: { customer: true, vehicle: true },
     });
 
-    return {
-      data: items as unknown as RentalResponseDto[],
+    return new PaginatedResultDto<RentalResponseDto>(
+      items as unknown as RentalResponseDto[],
       total,
       page,
       limit,
-    };
+    );
   }
 
   async findById(id: string): Promise<RentalResponseDto> {
@@ -83,7 +83,7 @@ export class RentalsService {
     const rental = this.rentalRepository.create({
       ...dto,
       start_date: new Date(dto.start_date),
-      end_date: dto.end_date ? new Date(dto.end_date) : null,
+      end_date: dto.end_date ? new Date(dto.end_date) : undefined,
       status: 'ACTIVE',
     });
 

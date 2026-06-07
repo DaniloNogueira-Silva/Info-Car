@@ -34,12 +34,12 @@ export class CustomersService {
       order: { created_at: 'DESC' },
     });
 
-    return {
-      data: items,
+    return new PaginatedResultDto<CustomerResponseDto>(
+      items as unknown as CustomerResponseDto[],
       total,
       page,
       limit,
-    };
+    );
   }
 
   async findById(id: string): Promise<CustomerResponseDto> {
