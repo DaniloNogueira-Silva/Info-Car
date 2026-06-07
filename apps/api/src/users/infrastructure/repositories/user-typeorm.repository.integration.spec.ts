@@ -10,8 +10,7 @@ describe('UserTypeOrmRepository (integration)', () => {
 
   beforeAll(async () => {
     dataSource = new DataSource({
-      type: 'better-sqlite3',
-      database: ':memory:',
+      type: 'sqljs',
       entities: [UserOrmEntity],
       synchronize: true,
     });
