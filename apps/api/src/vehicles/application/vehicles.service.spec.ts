@@ -99,33 +99,35 @@ describe('VehiclesService', () => {
   describe('findAll', () => {
     it('deve retornar veículos do cache quando disponível', async () => {
       // Arrange
-      const vehicles = [mockVehicle];
-      cache.get.mockResolvedValue(vehicles);
+      const resultDto = { data: [mockVehicle], total: 1, currentPage: 1, limit: 10, totalPages: 1 };
+      cache.get.mockResolvedValue(resultDto);
 
       // Act
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
       // Assert
-      expect(result).toEqual(vehicles);
-      expect(cache.get).toHaveBeenCalledWith('vehicles:all');
+      expect(result).toEqual(resultDto);
+      expect(cache.get).toHaveBeenCalledWith('vehicles:all:1:10:');
       expect(vehicleRepo.findAll).not.toHaveBeenCalled();
     });
 
     it('deve buscar do repositório e popular cache quando cache vazio', async () => {
       // Arrange
       const vehicles = [mockVehicle];
+      const total = 1;
       cache.get.mockResolvedValue(undefined);
-      vehicleRepo.findAll.mockResolvedValue(vehicles);
+      vehicleRepo.findAll.mockResolvedValue({ data: vehicles, total });
 
       // Act
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
       // Assert
-      expect(result).toEqual(vehicles);
+      expect(result.data).toEqual(vehicles);
+      expect(result.total).toEqual(total);
       expect(vehicleRepo.findAll).toHaveBeenCalledTimes(1);
       expect(cache.set).toHaveBeenCalledWith(
-        'vehicles:all',
-        JSON.parse(JSON.stringify(vehicles)),
+        'vehicles:all:1:10:',
+        JSON.parse(JSON.stringify(result)),
         60000,
       );
     });

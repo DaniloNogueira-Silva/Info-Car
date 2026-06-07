@@ -18,7 +18,7 @@ import {
   ApiResponse,
   ApiQuery,
 } from '@nestjs/swagger';
-import { CreateModelDto, UpdateModelDto, ModelResponseDto } from '@app/shared';
+import { CreateModelDto, UpdateModelDto, ModelResponseDto, PaginationQueryDto, PaginatedResultDto } from '@app/shared';
 import { ModelsService } from '../application/models.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -29,14 +29,17 @@ export class ModelsController {
   constructor(private readonly modelsService: ModelsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os modelos' })
-  @ApiResponse({ status: 200, description: 'Lista de modelos', type: [ModelResponseDto] })
+  @ApiOperation({ summary: 'Listar todos os modelos (Paginado)' })
+  @ApiResponse({ status: 200, description: 'Lista de modelos', type: PaginatedResultDto<ModelResponseDto> })
   @ApiQuery({ name: 'brand_id', required: false, description: 'Filtrar por marca' })
-  async findAll(@Query('brand_id') brandId?: string): Promise<ModelResponseDto[]> {
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @Query('brand_id') brandId?: string
+  ): Promise<PaginatedResultDto<ModelResponseDto> | ModelResponseDto[]> {
     if (brandId) {
       return this.modelsService.findByBrandId(brandId);
     }
-    return this.modelsService.findAll();
+    return this.modelsService.findAll(query) as unknown as PaginatedResultDto<ModelResponseDto>;
   }
 
   @Get(':id')

@@ -1,7 +1,7 @@
 import { User } from '../../domain/entities/user.entity';
 
 export interface IUserRepository {
-  findAll(): Promise<User[]>;
+  findAll(page?: number, limit?: number, filter?: string): Promise<{ data: User[]; total: number }>;
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   create(user: Partial<User>): Promise<User>;

@@ -280,18 +280,19 @@ k6 run --env BASE_URL=http://api:3000 load-test.js
 | Método | Rota | Descrição | Auth |
 |--------|------|-----------|------|
 | `POST` | `/api/v1/auth/login` | Autenticar e obter JWT | ❌ |
+| `POST` | `/api/v1/auth/register` | Cadastrar novo usuário | ✅ |
 | `GET` | `/api/v1` | Health check | ❌ |
-| `GET` | `/api/v1/brands` | Listar marcas | ✅ |
+| `GET` | `/api/v1/brands` | Listar marcas (Paginado) | ✅ |
 | `GET` | `/api/v1/brands/:id` | Buscar marca por ID | ✅ |
 | `POST` | `/api/v1/brands` | Criar marca | ✅ |
 | `PUT` | `/api/v1/brands/:id` | Atualizar marca | ✅ |
 | `DELETE` | `/api/v1/brands/:id` | Remover marca | ✅ |
-| `GET` | `/api/v1/models` | Listar modelos | ✅ |
+| `GET` | `/api/v1/models` | Listar modelos (Paginado) | ✅ |
 | `GET` | `/api/v1/models/:id` | Buscar modelo por ID | ✅ |
 | `POST` | `/api/v1/models` | Criar modelo | ✅ |
 | `PUT` | `/api/v1/models/:id` | Atualizar modelo | ✅ |
 | `DELETE` | `/api/v1/models/:id` | Remover modelo | ✅ |
-| `GET` | `/api/v1/vehicles` | Listar veículos (com cache) | ✅ |
+| `GET` | `/api/v1/vehicles` | Listar veículos (Paginado, com cache) | ✅ |
 | `GET` | `/api/v1/vehicles/:id` | Buscar veículo por ID (com cache) | ✅ |
 | `POST` | `/api/v1/vehicles` | Criar veículo | ✅ |
 | `PUT` | `/api/v1/vehicles/:id` | Atualizar veículo | ✅ |
@@ -308,13 +309,13 @@ k6 run --env BASE_URL=http://api:3000 load-test.js
 npm install
 
 # Subir apenas a infraestrutura (sem os apps)
-docker compose up sqlserver sqlserver-init redis rabbitmq mongodb -d
+docker compose up -d
 
 # Rodar a API em modo dev
-npm run start:dev
+npm run start:dev api
 
 # Rodar o worker em modo dev
-npx nest start worker --watch
+npm run start:dev worker
 
 # Build de produção
 npm run build

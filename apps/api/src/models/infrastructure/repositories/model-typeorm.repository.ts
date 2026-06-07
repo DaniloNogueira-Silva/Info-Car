@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import type { IModelRepository } from '@app/shared';
 import { Model } from '@app/shared';
 import { ModelOrmEntity } from '../entities/model.orm-entity';
@@ -12,12 +12,22 @@ export class ModelTypeOrmRepository implements IModelRepository {
     private readonly repo: Repository<ModelOrmEntity>,
   ) {}
 
-  async findAll(): Promise<Model[]> {
-    const entities = await this.repo.find({
+  async findAll(page: number = 1, limit: number = 10, filter?: string): Promise<{ data: Model[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const where = filter ? { name: Like(`%${filter}%`) } : {};
+
+    const [entities, total] = await this.repo.findAndCount({
+      where,
       relations: { brand: true },
       order: { name: 'ASC' },
+      skip,
+      take: limit,
     });
-    return entities.map((e) => new Model(e));
+    
+    return {
+      data: entities.map((e) => new Model(e)),
+      total,
+    };
   }
 
   async findById(id: string): Promise<Model | null> {

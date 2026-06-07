@@ -6,17 +6,17 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
-  ApiBearerAuth,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from '@app/shared';
+import { CreateBrandDto, UpdateBrandDto, BrandResponseDto, PaginationQueryDto, PaginatedResultDto } from '@app/shared';
 import { BrandsService } from '../application/brands.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -27,10 +27,10 @@ export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as marcas' })
-  @ApiResponse({ status: 200, description: 'Lista de marcas', type: [BrandResponseDto] })
-  async findAll(): Promise<BrandResponseDto[]> {
-    return this.brandsService.findAll();
+  @ApiOperation({ summary: 'Listar todas as marcas (Paginado)' })
+  @ApiResponse({ status: 200, description: 'Lista de marcas', type: PaginatedResultDto<BrandResponseDto> })
+  async findAll(@Query() query: PaginationQueryDto): Promise<PaginatedResultDto<BrandResponseDto>> {
+    return this.brandsService.findAll(query) as unknown as PaginatedResultDto<BrandResponseDto>;
   }
 
   @Get(':id')

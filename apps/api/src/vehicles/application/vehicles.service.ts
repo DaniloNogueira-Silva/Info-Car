@@ -16,6 +16,8 @@ import {
   RABBITMQ_SERVICE,
   VEHICLE_MUTATED_EVENT,
   VehicleMutatedEventDto,
+  PaginationQueryDto,
+  PaginatedResultDto,
 } from '@app/shared';
 
 @Injectable()
@@ -41,22 +43,25 @@ export class VehiclesService {
 
   // ── Queries (com cache) ──────────────────────────────────────
 
-  async findAll(): Promise<Vehicle[]> {
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResultDto<Vehicle>> {
     this.logger.debug('Fetching all vehicles...');
+    const { page = 1, limit = 10, filter } = query;
+    const cacheKey = `${this.CACHE_KEY_ALL}:${page}:${limit}:${filter || ''}`;
 
-    const cached = await this.cache.get<Vehicle[]>(this.CACHE_KEY_ALL);
+    const cached = await this.cache.get<PaginatedResultDto<Vehicle>>(cacheKey);
     if (cached) {
       this.logger.debug('Returning vehicles from cache');
       return cached;
     }
 
     this.logger.debug('Cache miss. Fetching vehicles from database');
-    const vehicles = await this.vehicleRepository.findAll();
+    const { data, total } = await this.vehicleRepository.findAll(page, limit, filter);
+    const result = new PaginatedResultDto<Vehicle>(data, total, page, limit);
 
-    const plainVehicles = JSON.parse(JSON.stringify(vehicles));
+    const plainResult = JSON.parse(JSON.stringify(result));
 
-    await this.cache.set(this.CACHE_KEY_ALL, plainVehicles, this.cacheTtl * 1000);
-    return vehicles;
+    await this.cache.set(cacheKey, plainResult, this.cacheTtl * 1000);
+    return result;
   }
 
   async findById(id: string): Promise<Vehicle> {

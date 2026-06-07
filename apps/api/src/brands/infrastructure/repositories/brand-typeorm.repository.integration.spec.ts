@@ -65,11 +65,12 @@ describe('BrandTypeOrmRepository (integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(3);
-      expect(result[0].name).toBe('Audi');
-      expect(result[1].name).toBe('Honda');
-      expect(result[2].name).toBe('Toyota');
-      expect(result[0]).toBeInstanceOf(Brand);
+      expect(result.data).toHaveLength(3);
+      expect(result.total).toBe(3);
+      expect(result.data[0].name).toBe('Audi');
+      expect(result.data[1].name).toBe('Honda');
+      expect(result.data[2].name).toBe('Toyota');
+      expect(result.data[0]).toBeInstanceOf(Brand);
     });
   });
 

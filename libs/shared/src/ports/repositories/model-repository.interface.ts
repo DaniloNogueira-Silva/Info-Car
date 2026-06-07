@@ -1,7 +1,7 @@
 import { Model } from '../../domain/entities/model.entity';
 
 export interface IModelRepository {
-  findAll(): Promise<Model[]>;
+  findAll(page?: number, limit?: number, filter?: string): Promise<{ data: Model[]; total: number }>;
   findById(id: string): Promise<Model | null>;
   findByBrandId(brandId: string): Promise<Model[]>;
   create(model: Partial<Model>): Promise<Model>;

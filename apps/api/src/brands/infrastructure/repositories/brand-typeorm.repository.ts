@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Brand } from '@app/shared';
 import type { IBrandRepository } from '@app/shared';
 import { BrandOrmEntity } from '../entities/brand.orm-entity';
@@ -12,9 +12,21 @@ export class BrandTypeOrmRepository implements IBrandRepository {
     private readonly repo: Repository<BrandOrmEntity>,
   ) {}
 
-  async findAll(): Promise<Brand[]> {
-    const entities = await this.repo.find({ order: { name: 'ASC' } });
-    return entities.map((e) => new Brand(e));
+  async findAll(page: number = 1, limit: number = 10, filter?: string): Promise<{ data: Brand[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const where = filter ? { name: Like(`%${filter}%`) } : {};
+    
+    const [entities, total] = await this.repo.findAndCount({
+      where,
+      order: { name: 'ASC' },
+      skip,
+      take: limit,
+    });
+    
+    return {
+      data: entities.map((e) => new Brand(e)),
+      total,
+    };
   }
 
   async findById(id: string): Promise<Brand | null> {

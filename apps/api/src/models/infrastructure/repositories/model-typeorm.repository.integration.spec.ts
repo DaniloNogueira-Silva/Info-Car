@@ -78,11 +78,12 @@ describe('ModelTypeOrmRepository (integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Corolla'); // ordenado por nome ASC
-      expect(result[1].name).toBe('Hilux');
-      expect(result[0].brand).toBeDefined();
-      expect(result[0].brand!.name).toBe('Toyota');
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(result.data[0].name).toBe('Corolla'); // ordenado por nome ASC
+      expect(result.data[1].name).toBe('Hilux');
+      expect(result.data[0].brand).toBeDefined();
+      expect(result.data[0].brand!.name).toBe('Toyota');
     });
   });
 

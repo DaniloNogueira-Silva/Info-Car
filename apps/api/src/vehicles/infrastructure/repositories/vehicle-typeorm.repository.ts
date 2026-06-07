@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import type { IVehicleRepository } from '@app/shared';
 import { Vehicle } from '@app/shared';
 import { VehicleOrmEntity } from '../entities/vehicle.orm-entity';
@@ -12,12 +12,22 @@ export class VehicleTypeOrmRepository implements IVehicleRepository {
     private readonly repo: Repository<VehicleOrmEntity>,
   ) {}
 
-  async findAll(): Promise<Vehicle[]> {
-    const entities = await this.repo.find({
+  async findAll(page: number = 1, limit: number = 10, filter?: string): Promise<{ data: Vehicle[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const where = filter ? { license_plate: Like(`%${filter}%`) } : {};
+
+    const [entities, total] = await this.repo.findAndCount({
+      where,
       relations: { model: { brand: true } },
       order: { license_plate: 'ASC' },
+      skip,
+      take: limit,
     });
-    return entities.map((e) => new Vehicle(e));
+    
+    return {
+      data: entities.map((e) => new Vehicle(e)),
+      total,
+    };
   }
 
   async findById(id: string): Promise<Vehicle | null> {

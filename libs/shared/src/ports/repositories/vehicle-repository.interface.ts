@@ -1,7 +1,7 @@
 import { Vehicle } from '../../domain/entities/vehicle.entity';
 
 export interface IVehicleRepository {
-  findAll(): Promise<Vehicle[]>;
+  findAll(page?: number, limit?: number, filter?: string): Promise<{ data: Vehicle[]; total: number }>;
   findById(id: string): Promise<Vehicle | null>;
   findByLicensePlate(licensePlate: string): Promise<Vehicle | null>;
   findByChassis(chassis: string): Promise<Vehicle | null>;

@@ -99,10 +99,11 @@ describe('VehicleTypeOrmRepository (integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(2);
-      expect(result[0].license_plate).toBe('AAA-2222'); // ordenado ASC
-      expect(result[0].model).toBeDefined();
-      expect(result[0].model!.brand).toBeDefined();
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(result.data[0].license_plate).toBe('AAA-2222'); // ordenado ASC
+      expect(result.data[0].model).toBeDefined();
+      expect(result.data[0].model!.brand).toBeDefined();
     });
   });
 

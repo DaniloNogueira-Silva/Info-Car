@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
@@ -20,6 +21,8 @@ import {
   CreateVehicleDto,
   UpdateVehicleDto,
   VehicleResponseDto,
+  PaginationQueryDto,
+  PaginatedResultDto,
 } from '@app/shared';
 import { VehiclesService } from '../application/vehicles.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -31,10 +34,10 @@ export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os veículos' })
-  @ApiResponse({ status: 200, description: 'Lista de veículos', type: [VehicleResponseDto] })
-  async findAll(): Promise<VehicleResponseDto[]> {
-    return this.vehiclesService.findAll();
+  @ApiOperation({ summary: 'Listar todos os veículos (Paginado)' })
+  @ApiResponse({ status: 200, description: 'Lista de veículos', type: PaginatedResultDto<VehicleResponseDto> })
+  async findAll(@Query() query: PaginationQueryDto): Promise<PaginatedResultDto<VehicleResponseDto>> {
+    return this.vehiclesService.findAll(query) as unknown as PaginatedResultDto<VehicleResponseDto>;
   }
 
   @Get(':id')

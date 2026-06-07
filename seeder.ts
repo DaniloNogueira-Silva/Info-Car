@@ -37,7 +37,7 @@ async function runSeed() {
     password: process.env.DB_PASSWORD || 'YourStrong!Passw0rd',
     database: process.env.DB_DATABASE || 'info-car',
     entities: [UserOrmEntity, BrandOrmEntity, ModelOrmEntity, VehicleOrmEntity],
-    synchronize: false,
+    synchronize: true,
     options: {
       encrypt: false,
       trustServerCertificate: true,
@@ -56,7 +56,7 @@ async function runSeed() {
       // 1. Criar o Usuário Default (aivacol)
       console.log('1️⃣ Criando Usuário Default (aivacol)...');
       
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('aivacol', 10);
       const user = new UserOrmEntity();
       user.id = crypto.randomUUID();
       user.nickname = 'aivacol';

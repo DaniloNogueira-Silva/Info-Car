@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import type { IModelRepository, IBrandRepository } from '@app/shared';
-import { Model, MODEL_REPOSITORY, BRAND_REPOSITORY } from '@app/shared';
+import { Model, MODEL_REPOSITORY, BRAND_REPOSITORY, PaginationQueryDto, PaginatedResultDto } from '@app/shared';
 
 @Injectable()
 export class ModelsService {
@@ -13,9 +13,11 @@ export class ModelsService {
     private readonly brandRepository: IBrandRepository,
   ) {}
 
-  async findAll(): Promise<Model[]> {
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResultDto<Model>> {
     this.logger.debug('Fetching all models...');
-    return this.modelRepository.findAll();
+    const { page = 1, limit = 10, filter } = query;
+    const { data, total } = await this.modelRepository.findAll(page, limit, filter);
+    return new PaginatedResultDto<Model>(data, total, page, limit);
   }
 
   async findById(id: string): Promise<Model> {

@@ -42,25 +42,28 @@ describe('BrandsService', () => {
     it('deve retornar todas as marcas', async () => {
       // Arrange
       const brands = [mockBrand];
-      repository.findAll.mockResolvedValue(brands);
+      const total = 1;
+      repository.findAll.mockResolvedValue({ data: brands, total });
 
       // Act
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
       // Assert
-      expect(result).toEqual(brands);
+      expect(result.data).toEqual(brands);
+      expect(result.total).toEqual(total);
       expect(repository.findAll).toHaveBeenCalledTimes(1);
     });
 
     it('deve retornar lista vazia quando não há marcas', async () => {
       // Arrange
-      repository.findAll.mockResolvedValue([]);
+      repository.findAll.mockResolvedValue({ data: [], total: 0 });
 
       // Act
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
       // Assert
-      expect(result).toEqual([]);
+      expect(result.data).toEqual([]);
+      expect(result.total).toEqual(0);
     });
   });
 

@@ -64,13 +64,15 @@ describe('ModelsService', () => {
     it('deve retornar todos os modelos', async () => {
       // Arrange
       const models = [mockModel];
-      modelRepo.findAll.mockResolvedValue(models);
+      const total = 1;
+      modelRepo.findAll.mockResolvedValue({ data: models, total });
 
       // Act
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
       // Assert
-      expect(result).toEqual(models);
+      expect(result.data).toEqual(models);
+      expect(result.total).toEqual(total);
       expect(modelRepo.findAll).toHaveBeenCalledTimes(1);
     });
   });
