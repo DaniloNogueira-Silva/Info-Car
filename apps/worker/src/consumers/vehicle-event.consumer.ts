@@ -34,13 +34,10 @@ export class VehicleEventConsumer {
         `Processing vehicle.mutated event: [${data.action}] vehicle ${data.vehicleId}`,
       );
 
-      // 1. Salvar log de auditoria no MongoDB
       await this.auditService.saveAuditLog(data);
 
-      // 2. Invalidar cache no Redis
       await this.cacheService.invalidateVehicleCache(data);
 
-      // Acknowledge a mensagem após ambos processarem com sucesso
       channel.ack(originalMsg);
 
       this.logger.log(
@@ -51,7 +48,6 @@ export class VehicleEventConsumer {
         `Failed to process vehicle.mutated event: ${error.message}`,
         error.stack,
       );
-      // Negative acknowledgment — requeue a mensagem
       channel.nack(originalMsg, false, true);
     }
   }

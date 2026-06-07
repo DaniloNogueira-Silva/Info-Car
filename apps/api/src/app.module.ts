@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
@@ -11,9 +12,13 @@ import { RedisModule } from 'libs/infrastructure/redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { DatabaseModule } from 'libs/infrastructure/database/database.module';
+
+import { FinesSimulatorModule } from './fines-simulator/fines-simulator.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     // Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
@@ -30,28 +35,11 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       }],
     }),
 
+    FinesSimulatorModule,
 
-    // TypeORM — SQL Server
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mssql' as const,
-        host: config.get<string>('DB_HOST', 'localhost'),
 
-        port: parseInt(config.get<string>('DATABASE_PORT', '1433'), 10) || 1433,
-
-        username: config.get<string>('DB_USERNAME', 'sa'),
-        password: config.get<string>('DB_PASSWORD', 'YourStrong!Passw0rd'),
-        database: config.get<string>('DB_DATABASE', 'info-car'),
-        autoLoadEntities: true,
-        synchronize: false,
-        options: {
-          encrypt: false,
-          trustServerCertificate: true,
-        },
-      }),
-    }),
+    // Database — SQL Server
+    DatabaseModule,
     // Redis Cache
     RedisModule,
 

@@ -11,6 +11,8 @@ import { UserOrmEntity } from './apps/api/src/users/infrastructure/entities/user
 import { BrandOrmEntity } from './apps/api/src/brands/infrastructure/entities/brand.orm-entity';
 import { ModelOrmEntity } from './apps/api/src/models/infrastructure/entities/model.orm-entity';
 import { VehicleOrmEntity } from './apps/api/src/vehicles/infrastructure/entities/vehicle.orm-entity';
+import { CustomerOrmEntity } from './apps/api/src/rentals/infrastructure/entities/customer.orm-entity';
+import { RentalOrmEntity } from './apps/api/src/rentals/infrastructure/entities/rental.orm-entity';
 
 async function runSeed() {
   console.log('🚀 Iniciando script de seed...\n');
@@ -22,7 +24,7 @@ async function runSeed() {
     username: process.env.DB_USERNAME || 'sa',
     password: process.env.DB_PASSWORD || 'YourStrong!Passw0rd',
     database: process.env.DB_DATABASE || 'info-car',
-    entities: [UserOrmEntity, BrandOrmEntity, ModelOrmEntity, VehicleOrmEntity],
+    entities: [UserOrmEntity, BrandOrmEntity, ModelOrmEntity, VehicleOrmEntity, CustomerOrmEntity, RentalOrmEntity],
     synchronize: false,
     options: {
       encrypt: false,
@@ -115,6 +117,7 @@ async function runSeed() {
         vehicle.year = item.year;
         vehicle.model_id = modelId;
         vehicle.created_by = userId;
+        vehicle.status = 'AVAILABLE';
 
         vehiclesToInsert.push(vehicle);
       }
@@ -127,6 +130,34 @@ async function runSeed() {
       }
 
       console.log(`✅ ${vehiclesToInsert.length} veículos inseridos com sucesso!`);
+
+      console.log('4️⃣ Criando um Cliente e Locação Ativa de teste...');
+      
+      let customer = await queryRunner.manager.findOne(CustomerOrmEntity, { where: { email: 'joao.locador@teste.com' } });
+      if (!customer) {
+        customer = new CustomerOrmEntity();
+        customer.id = crypto.randomUUID();
+        customer.name = 'João Locador Teste';
+        customer.email = 'joao.locador@teste.com';
+        customer.cnh = '12345678900';
+        await queryRunner.manager.insert(CustomerOrmEntity, customer);
+      }
+
+      const activeRental = await queryRunner.manager.findOne(RentalOrmEntity, { where: { customer_id: customer.id, status: 'ACTIVE' } });
+      if (!activeRental && vehiclesToInsert.length > 0) {
+        const firstVehicle = vehiclesToInsert[0];
+        
+        const rental = new RentalOrmEntity();
+        rental.id = crypto.randomUUID();
+        rental.vehicle_id = firstVehicle.id;
+        rental.customer_id = customer.id;
+        rental.start_date = new Date();
+        rental.status = 'ACTIVE';
+        await queryRunner.manager.insert(RentalOrmEntity, rental);
+
+        await queryRunner.manager.update(VehicleOrmEntity, { id: firstVehicle.id }, { status: 'RENTED' });
+        console.log(`✅ Locação ativa criada com o veículo de placa ${firstVehicle.license_plate}`);
+      }
 
       await queryRunner.commitTransaction();
       console.log('✅ Transação concluída (Commit)!');

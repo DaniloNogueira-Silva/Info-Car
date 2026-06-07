@@ -10,6 +10,4 @@ export * from './dtos/index';
 // Constants
 export * from './constants/rabbitmq.constants';
 
-// Module
-export * from './shared.module';
 export * from '../../infrastructure/rabbitmq/rabbitmq.module';

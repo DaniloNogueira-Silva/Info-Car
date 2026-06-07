@@ -14,10 +14,8 @@ export class CacheService {
   ) {}
 
   async invalidateVehicleCache(event: VehicleMutatedEventDto): Promise<void> {
-    // Sempre invalida a listagem geral
     await this.cache.del(this.CACHE_KEY_ALL);
 
-    // Invalida a chave específica do veículo
     if (event.vehicleId) {
       await this.cache.del(`${this.CACHE_KEY_PREFIX}${event.vehicleId}`);
     }

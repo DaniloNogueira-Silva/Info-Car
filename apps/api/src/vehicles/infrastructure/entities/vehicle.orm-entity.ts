@@ -43,6 +43,9 @@ export class VehicleOrmEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column({ length: 100 })
+  @Column({ length: 100, nullable: true })
   created_by: string;
+
+  @Column({ length: 50, default: 'AVAILABLE' })
+  status: string; // AVAILABLE, RENTED, MAINTENANCE
 }
