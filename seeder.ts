@@ -27,11 +27,11 @@ const carData = {
 };
 
 async function runSeed() {
-  console.log('🚀 Iniciando script de seed super performático...\n');
+  console.log('🚀 Iniciando script de seed...\n');
 
   const dataSource = new DataSource({
     type: 'mssql',
-    host: process.env.DB_HOST || 'localhost',
+    host: 'localhost',
     port: parseInt(process.env.DATABASE_PORT || '1433', 10),
     username: process.env.DB_USERNAME || 'sa',
     password: process.env.DB_PASSWORD || 'YourStrong!Passw0rd',

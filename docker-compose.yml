@@ -1,49 +1,49 @@
 services:
-# ---------------------------------------------------------
-# DESCOMENTE PARA RODAR A API NO CONTAINER
-# ---------------------------------------------------------
-#   api:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.api
-#     container_name: info-car-api
-#     ports:
-#       - '3000:3000'
-#     env_file:
-#       - .env
-#     depends_on:
-#       sqlserver:
-#         condition: service_healthy
-#       sqlserver-init:
-#         condition: service_completed_successfully
-#       redis:
-#         condition: service_started
-#       rabbitmq:
-#         condition: service_healthy
-#     restart: unless-stopped
-#     networks:
-#       - info-car-network
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: info-car-api
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - info-car-network
 
-# ---------------------------------------------------------
-# DESCOMENTE PARA RODAR O WORKER NO CONTAINER
-# ---------------------------------------------------------
-#   worker:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.worker
-#     container_name: info-car-worker
-#     env_file:
-#       - .env
-#     depends_on:
-#       rabbitmq:
-#         condition: service_healthy
-#       mongodb:
-#         condition: service_started
-#       redis:
-#         condition: service_started
-#     restart: unless-stopped
-#     networks:
-#       - info-car-network
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: info-car-worker
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - info-car-network
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
