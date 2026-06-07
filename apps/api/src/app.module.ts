@@ -15,6 +15,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { DatabaseModule } from 'libs/infrastructure/database/database.module';
 
 import { FinesSimulatorModule } from './fines-simulator/fines-simulator.module';
+import { CustomersModule } from './customers/customers.module';
+import { RentalsModule } from './rentals/rentals.module';
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { FinesSimulatorModule } from './fines-simulator/fines-simulator.module';
     BrandsModule,
     ModelsModule,
     VehiclesModule,
+    CustomersModule,
+    RentalsModule,
   ],
   controllers: [],
   providers: [

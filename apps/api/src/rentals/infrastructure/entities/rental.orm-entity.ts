@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { CustomerOrmEntity } from './customer.orm-entity';
+import { CustomerOrmEntity } from '../../../customers/infrastructure/entities/customer.orm-entity';
 import { VehicleOrmEntity } from '../../../vehicles/infrastructure/entities/vehicle.orm-entity';
 
 @Entity('rentals')

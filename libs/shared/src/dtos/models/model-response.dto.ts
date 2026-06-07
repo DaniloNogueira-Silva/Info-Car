@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BrandResponseDto } from './brand-response.dto';
+import { BrandResponseDto } from '../brands/brand-response.dto';
 
 export class ModelResponseDto {
   @ApiProperty({ example: 'uuid-gerado' })

@@ -10,7 +10,7 @@ import { FinesConsumer } from './consumers/fines.consumer';
 import { RedisModule } from 'libs/infrastructure/redis/redis.module';
 import { FineOrmEntity } from '../../api/src/fines/infrastructure/entities/fine.orm-entity';
 import { RentalOrmEntity } from '../../api/src/rentals/infrastructure/entities/rental.orm-entity';
-import { CustomerOrmEntity } from '../../api/src/rentals/infrastructure/entities/customer.orm-entity';
+import { CustomerOrmEntity } from '../../api/src/customers/infrastructure/entities/customer.orm-entity';
 import { ModelOrmEntity } from '../../api/src/models/infrastructure/entities/model.orm-entity';
 import { BrandOrmEntity } from '../../api/src/brands/infrastructure/entities/brand.orm-entity';
 import { VehicleOrmEntity } from '../../api/src/vehicles/infrastructure/entities/vehicle.orm-entity';

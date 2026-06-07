@@ -106,15 +106,13 @@ Lá você encontra todos os endpoints detalhados (`/brands`, `/models`, `/vehicl
 2. **Cronjob Simulador de Multas:** A API roda uma rotina em background (usando o `@nestjs/schedule`). De 1 em 1 minuto, ela procura por locações ativas e **simula a recepção de uma multa** (um webhook falso estilo SNE) para aquele veículo alugado.
 3. **RabbitMQ + Worker:** A API não trava seu processo salvando os dados pesados. Ela simplesmente dispara um evento (`fine.received`) na fila do RabbitMQ.
 4. **Regras de Negócio e E-mails (Worker):**
-   - O nosso *Worker* captura a mensagem da fila, salva a multa no banco de dados e simula o disparo de um **E-mail de Notificação** para o cliente infrator (mostrado nos logs).
+   - O *Worker* captura a mensagem da fila, salva a multa no banco de dados e simula o disparo de um **E-mail de Notificação** para o cliente infrator (que por hora será apenas um log simulando um email).
    - **Regra de Bloqueio Crítica:** Ao atingir **3 multas na mesma locação**, o sistema bloqueia o veículo (muda o status para `MAINTENANCE` - sob revisão) e cancela o contrato da locação (`status = CANCELLED`) automaticamente!
 
-### 👀 Onde Ver a Mágica Acontecer?
-O nosso *Seeder* inicial já cuida de criar o 1º cliente e atrelar a ele a 1ª locação ativa.
+5. **Vendo o Resultado**: O  *Seeder* inicial já cuida de criar o 1º cliente e atrelar a ele a 1ª locação ativa.
 Tudo que você precisa fazer é abrir o terminal após subir os containers e rodar:
 
 ```bash
 docker compose logs -f worker
 ```
 
-Você verá, minuto a minuto, os "e-mails" sendo disparados pelo Worker. E se aguardar 3 minutos, você verá a notificação crítica em vermelho anunciando o Cancelamento da Locação devido ao excesso de multas. Isso mostra domínio completo ponta-a-ponta na Stack pedida!
