@@ -253,7 +253,15 @@ npx jest apps/worker
 
 ### Teste de Carga (K6)
 
-Simula **500 Virtual Users** acessando `GET /api/v1/vehicles`:
+🛡️ Rate Limiting & Testes de Carga
+A aplicação utiliza o @nestjs/throttler para proteção contra abusos. No arquivo .env.example, os valores estão configurados para um cenário de uso normal (ex: 100 requisições por minuto).
+
+Executando o Teste de Carga:
+Eu desenvolvi um script de teste de carga (usando K6/Artillery/JMeter...) para validar a performance da API. Para rodar esse teste adequadamente sem ser bloqueado pela proteção, você precisará aumentar os limites no seu arquivo .env:
+
+Snippet de código
+THROTTLE_TTL=60000
+THROTTLE_LIMIT=10000 # Valor elevado para fins de stress test
 
 ```bash
 # Teste padrão

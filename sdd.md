@@ -9,31 +9,25 @@ O sistema será construído utilizando os princípios de **Clean Architecture** 
 
 ## 2. Stack Tecnológica Base
 
-* 
 **Core:** Node.js (18+) e NestJS (10+).
 
 
-* 
 **Banco de Dados Relacional:** SQL Server via TypeORM  (Para dados transacionais e de domínio).
 
 
-* 
 **Banco de Dados NoSQL:** MongoDB (Para logs de auditoria e time-series da telemetria).
 
 
-* 
 **Cache:** Redis  (Obrigatório para otimização de leitura) .
 
 
-* 
 **Mensageria:** RabbitMQ  (Comunicação assíncrona, invalidação de cache e buffer de telemetria).
 
 
-* 
 **Testes:** Jest  e K6 (Load Testing).
 
 
-* **Observabilidade:** Prometheus + Grafana.
+**Observabilidade:** Prometheus + Grafana.
 
 ## 3. Diretrizes de Engenharia e Padrões
 
@@ -164,9 +158,6 @@ Docker Compose (`docker-compose.yml`)
 * 
 **Seed:** Script `entrypoint.sh` ou funcionalidade na inicialização do NestJS que injeta os dados do arquivo obrigatório `seed_vehicles.json` e cria o usuário padrão `info-car` automaticamente.
 
-
-
-## 9. Funcionalidade Diferencial: Simulador de Telemetria (IoT)
 
 Como prova da proficiência em microsserviços:
 

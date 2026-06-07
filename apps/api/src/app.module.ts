@@ -20,11 +20,15 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       envFilePath: '.env',
     }),
 
-    // Rate Limiting — 100 req/min por IP
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    // Rate Limiting
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        ttl: parseInt(config.get<string>('THROTTLE_TTL', '60000'), 10),
+        limit: parseInt(config.get<string>('THROTTLE_LIMIT', '100'), 10),
+      }],
+    }),
 
 
     // TypeORM — SQL Server
