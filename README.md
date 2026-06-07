@@ -33,18 +33,23 @@ Suba os containers executando o comando abaixo. Ele fará o build da `api` e do 
 docker compose up -d --build
 ```
 
-### 3. Rodar o Seeder (Banco de Dados Inicial)
+### 3. Executar Migrations e Rodar o Seeder (Banco de Dados Inicial)
 
-Para que você possa testar a aplicação imediatamente, criei um script de *seeder* que insere dados fictícios no banco, incluindo um usuário administrador padrão e alguns veículos.
+Para que você possa testar a aplicação imediatamente, garantimos que todas as **Migrations do TypeORM** estejam alinhadas, e criamos um script de *seeder* que insere dados no banco lendo diretamente do arquivo mock **`seed_vehicles.json`** presente na raiz do projeto.
 
-Execute:
+Execute as migrations para criar as tabelas:
+```bash
+npm run migration:run
+```
+
+Em seguida, execute o seeder:
 ```bash
 npm run seed
 ```
 
 **Usuário Padrão Criado pelo Seeder:**
-- **Email:** `admin@infocar.com`
-- **Senha:** `Admin@123`
+- **Email/Login:** `aivacol@aivacol.com`
+- **Senha:** `aivacol`
 *(Você usará essas credenciais para gerar seu token JWT nas requisições protegidas)*
 
 ### 4. Executando os Testes de Cobertura

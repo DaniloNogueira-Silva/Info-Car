@@ -45,7 +45,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
         password: config.get<string>('DB_PASSWORD', 'YourStrong!Passw0rd'),
         database: config.get<string>('DB_DATABASE', 'info-car'),
         autoLoadEntities: true,
-        synchronize: config.get<string>('DB_SYNC', 'false') === 'true',
+        synchronize: false,
         options: {
           encrypt: false,
           trustServerCertificate: true,

@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
 
 dotenv.config();
 
@@ -9,22 +11,6 @@ import { UserOrmEntity } from './apps/api/src/users/infrastructure/entities/user
 import { BrandOrmEntity } from './apps/api/src/brands/infrastructure/entities/brand.orm-entity';
 import { ModelOrmEntity } from './apps/api/src/models/infrastructure/entities/model.orm-entity';
 import { VehicleOrmEntity } from './apps/api/src/vehicles/infrastructure/entities/vehicle.orm-entity';
-
-const randomLetters = (length: number) => Array.from({ length }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
-const randomNumbers = (length: number) => Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
-const generatePlate = () => `${randomLetters(3)}-${randomNumbers(1)}${randomLetters(1)}${randomNumbers(2)}`;
-const generateChassis = () => crypto.randomBytes(8).toString('hex').toUpperCase() + randomLetters(1); 
-const generateRenavam = () => randomNumbers(11);
-const generateYear = () => Math.floor(Math.random() * (2024 - 2000 + 1)) + 2000;
-
-const carData = {
-  'Toyota': ['Corolla', 'Camry', 'Hilux', 'Yaris', 'RAV4', 'SW4', 'Prius', 'Etios', 'Corolla Cross', 'Land Cruiser'],
-  'Honda': ['Civic', 'Accord', 'CR-V', 'HR-V', 'Fit', 'City', 'WR-V', 'Pilot', 'Odyssey', 'Ridgeline'],
-  'Volkswagen': ['Golf', 'Polo', 'Jetta', 'Passat', 'Tiguan', 'Nivus', 'T-Cross', 'Amarok', 'Saveiro', 'Virtus'],
-  'Ford': ['Mustang', 'F-150', 'Ranger', 'EcoSport', 'Focus', 'Fiesta', 'Edge', 'Escape', 'Explorer', 'Bronco'],
-  'Chevrolet': ['Camaro', 'Onix', 'Cruze', 'Tracker', 'S10', 'Equinox', 'Trailblazer', 'Spin', 'Montana', 'Silverado'],
-  'BMW': ['Serie 3', 'Serie 5', 'Serie 7', 'X1', 'X3', 'X5', 'X6', 'M3', 'M4', 'Z4']
-};
 
 async function runSeed() {
   console.log('🚀 Iniciando script de seed...\n');
@@ -37,7 +23,7 @@ async function runSeed() {
     password: process.env.DB_PASSWORD || 'YourStrong!Passw0rd',
     database: process.env.DB_DATABASE || 'info-car',
     entities: [UserOrmEntity, BrandOrmEntity, ModelOrmEntity, VehicleOrmEntity],
-    synchronize: true,
+    synchronize: false,
     options: {
       encrypt: false,
       trustServerCertificate: true,
@@ -61,11 +47,10 @@ async function runSeed() {
       user.id = crypto.randomUUID();
       user.nickname = 'aivacol';
       user.name = 'Aiva Col';
-      user.email = 'aivacol@example.com';
+      user.email = 'aivacol@aivacol.com';
       user.password = hashedPassword;
       user.created_by = 'system';
       
-      // Upsert para não dar erro se já existir
       const existingUser = await queryRunner.manager.findOne(UserOrmEntity, { where: { email: user.email } });
       let userId: string;
       if (!existingUser) {
@@ -77,66 +62,71 @@ async function runSeed() {
         console.log(`✅ Usuário já existia com ID: ${userId}`);
       }
 
-      // 2. Criar 6 Marcas e seus Modelos
-      console.log('2️⃣ Criando Marcas e Modelos...');
-      const modelsList: ModelOrmEntity[] = [];
+      // 2. Ler mock de veículos
+      const mockPath = path.join(__dirname, 'seed_vehicles.json');
+      const mockData = JSON.parse(fs.readFileSync(mockPath, 'utf-8'));
+      
+      console.log('2️⃣ Lendo mock de veículos e criando marcas/modelos necessários...');
+      
+      const brandsCache = new Map<string, string>();
+      const modelsCache = new Map<string, string>();
 
-      for (const [brandName, models] of Object.entries(carData)) {
-        let brand = await queryRunner.manager.findOne(BrandOrmEntity, { where: { name: brandName } });
-        
-        if (!brand) {
-          brand = new BrandOrmEntity();
-          brand.id = crypto.randomUUID();
-          brand.name = brandName;
-          brand.created_by = userId;
-          await queryRunner.manager.insert(BrandOrmEntity, brand);
+      const vehiclesToInsert: VehicleOrmEntity[] = [];
+
+      for (const item of mockData) {
+        // Garantir Marca
+        let brandId = brandsCache.get(item.brand);
+        if (!brandId) {
+          let brand = await queryRunner.manager.findOne(BrandOrmEntity, { where: { name: item.brand } });
+          if (!brand) {
+            brand = new BrandOrmEntity();
+            brand.id = crypto.randomUUID();
+            brand.name = item.brand;
+            brand.created_by = userId;
+            await queryRunner.manager.insert(BrandOrmEntity, brand);
+          }
+          brandId = brand.id;
+          brandsCache.set(item.brand, brandId);
         }
 
-        for (const modelName of models) {
-          let model = await queryRunner.manager.findOne(ModelOrmEntity, { where: { name: modelName, brand_id: brand.id } });
-          
+        // Garantir Modelo
+        const modelCacheKey = `${item.brand}_${item.model}`;
+        let modelId = modelsCache.get(modelCacheKey);
+        if (!modelId) {
+          let model = await queryRunner.manager.findOne(ModelOrmEntity, { where: { name: item.model, brand_id: brandId } });
           if (!model) {
             model = new ModelOrmEntity();
             model.id = crypto.randomUUID();
-            model.name = modelName;
-            model.brand_id = brand.id;
+            model.name = item.model;
+            model.brand_id = brandId;
             model.created_by = userId;
             await queryRunner.manager.insert(ModelOrmEntity, model);
           }
-          modelsList.push(model);
+          modelId = model.id;
+          modelsCache.set(modelCacheKey, modelId);
         }
-      }
-      console.log(`✅ 6 Marcas e ${modelsList.length} modelos garantidos no banco.`);
 
-      // 3. Criar 1000 Veículos
-      console.log('3️⃣ Criando 1000 veículos em lote...');
-      const vehiclesToInsert: VehicleOrmEntity[] = [];
-      const totalVehicles = 1000;
-
-      for (let i = 0; i < totalVehicles; i++) {
-        const randomModel = modelsList[Math.floor(Math.random() * modelsList.length)];
-        
+        // Criar Veículo
         const vehicle = new VehicleOrmEntity();
         vehicle.id = crypto.randomUUID();
-        vehicle.license_plate = generatePlate();
-        vehicle.chassis = generateChassis();
-        vehicle.renavam = generateRenavam();
-        vehicle.year = generateYear();
-        vehicle.model_id = randomModel.id;
+        vehicle.license_plate = item.license_plate;
+        vehicle.chassis = item.chassis;
+        vehicle.renavam = item.renavam;
+        vehicle.year = item.year;
+        vehicle.model_id = modelId;
         vehicle.created_by = userId;
 
         vehiclesToInsert.push(vehicle);
       }
 
-      // Inserir em chunks para não estourar os limites do banco (ex: 200 por vez)
-      const chunkSize = 200;
+      console.log('3️⃣ Inserindo veículos no banco de dados...');
+      const chunkSize = 50;
       for (let i = 0; i < vehiclesToInsert.length; i += chunkSize) {
         const chunk = vehiclesToInsert.slice(i, i + chunkSize);
         await queryRunner.manager.insert(VehicleOrmEntity, chunk);
-        console.log(`⏳ Inseridos ${Math.min(i + chunkSize, totalVehicles)} de ${totalVehicles} veículos...`);
       }
 
-      console.log('✅ Todos os veículos inseridos com sucesso!');
+      console.log(`✅ ${vehiclesToInsert.length} veículos inseridos com sucesso!`);
 
       await queryRunner.commitTransaction();
       console.log('✅ Transação concluída (Commit)!');
