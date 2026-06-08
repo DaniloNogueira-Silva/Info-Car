@@ -38,4 +38,15 @@ export class RedisService {
       this.logger.error(`Error deleting cache key ${key}:`, error);
     }
   }
+
+  async delByPattern(pattern: string): Promise<void> {
+    try {
+      const keys = await this.redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await this.redisClient.del(...keys);
+      }
+    } catch (error) {
+      this.logger.error(`Error deleting cache keys by pattern ${pattern}:`, error);
+    }
+  }
 }

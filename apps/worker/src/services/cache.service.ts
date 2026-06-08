@@ -14,7 +14,7 @@ export class CacheService {
   ) {}
 
   async invalidateVehicleCache(event: VehicleMutatedEventDto): Promise<void> {
-    await this.cache.del(this.CACHE_KEY_ALL);
+    await this.cache.delByPattern(`${this.CACHE_KEY_ALL}*`);
 
     if (event.vehicleId) {
       await this.cache.del(`${this.CACHE_KEY_PREFIX}${event.vehicleId}`);
